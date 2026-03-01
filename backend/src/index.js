@@ -5,6 +5,9 @@ const helmet = require('helmet');
 const path = require('path');
 const pool = require('./db/pool');
 
+const emailService = require('./services/emailService');
+const { startReminderJob } = require('./jobs/reminderJob');
+
 const app = express();
 const PORT = process.env.PORT || 3002;
 
@@ -172,7 +175,20 @@ app.post('/api/public/book', async (req, res) => {
       [apptResult.rows[0].id]
     );
 
-    res.status(201).json(full.rows[0]);
+    const apptData = full.rows[0];
+    res.status(201).json(apptData);
+
+    // Send confirmation emails asynchronously (don't block response)
+    const bizResult = await pool.query('SELECT name, address FROM businesses WHERE id = $1', [businessId]);
+    apptData.business_name = bizResult.rows[0]?.name;
+    apptData.business_address = bizResult.rows[0]?.address;
+    emailService.sendBookingConfirmation(apptData).catch(e => console.error('Email error:', e.message));
+    
+    // Notify owner
+    const ownerResult = await pool.query('SELECT email FROM owners WHERE business_id = $1 LIMIT 1', [businessId]);
+    if (ownerResult.rows[0]) {
+      emailService.sendOwnerNotification(apptData, ownerResult.rows[0].email).catch(e => console.error('Owner email error:', e.message));
+    }
   } catch (err) {
     await client.query('ROLLBACK');
     console.error('Public booking error:', err);
@@ -203,6 +219,21 @@ app.post('/api/public/cancel/:token', async (req, res) => {
 
     await pool.query(`UPDATE appointments SET status = 'cancelled' WHERE id = $1`, [appt.id]);
     res.json({ cancelled: true });
+
+    // Send cancellation emails async
+    const fullAppt = await pool.query(
+      `SELECT a.*, c.name as client_name, c.email as client_email, s.name as staff_name,
+              sv.name as service_name, b.name as business_name
+       FROM appointments a
+       LEFT JOIN clients c ON a.client_id = c.id LEFT JOIN staff s ON a.staff_id = s.id
+       LEFT JOIN services sv ON a.service_id = sv.id LEFT JOIN businesses b ON a.business_id = b.id
+       WHERE a.id = $1`, [appt.id]
+    );
+    if (fullAppt.rows[0]) {
+      emailService.sendCancellationClient(fullAppt.rows[0]).catch(() => {});
+      const owner = await pool.query('SELECT email FROM owners WHERE business_id = $1 LIMIT 1', [fullAppt.rows[0].business_id]);
+      if (owner.rows[0]) emailService.sendCancellationOwner(fullAppt.rows[0], owner.rows[0].email).catch(() => {});
+    }
   } catch (err) {
     res.status(500).json({ error: 'Cancel failed' });
   }
@@ -239,4 +270,5 @@ app.get('*', (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`🟢 BoredRoom Booking running on port ${PORT}`);
+  startReminderJob();
 });
