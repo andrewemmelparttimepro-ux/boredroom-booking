@@ -1,0 +1,10 @@
+{
+  "phase1": "in_progress",
+  "phase2": "pending",
+  "phase3": "pending",
+  "phase4": "pending",
+  "phase5": "pending",
+  "github_repo": "https://github.com/andrewemmelparttimepro-ux/boredroom-booking.git",
+  "database_url": "postgresql://boredroom:IYwAJvNKVFIqJsAz2kreniQBOWpbyZrj@dpg-d6g6c51drdic738uhfpg-a.oregon-postgres.render.com:5432/boredroom",
+  "phase1_errors": []
+}

@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: boredroom-booking
+    env: node
+    plan: free
+    region: oregon
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        value: boredroom-booking-secret-2026-change-in-prod

@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard — BoredRoom Booking</title>
+  <link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+  <div class="dashboard">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <h2>BOREDROOM</h2>
+        <span>Booking</span>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="#" class="active" data-page="calendar" onclick="showPage('calendar')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Calendar
+        </a>
+        <a href="#" data-page="services" onclick="showPage('services')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>
+          Services
+        </a>
+        <a href="#" data-page="staff" onclick="showPage('staff')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4-4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+          Staff
+        </a>
+        <a href="#" data-page="clients" onclick="showPage('clients')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          Clients
+        </a>
+        <a href="#" data-page="settings" onclick="showPage('settings')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+          Settings
+        </a>
+      </nav>
+      <div class="sidebar-user">
+        <div class="sidebar-avatar" id="userAvatar">?</div>
+        <div class="sidebar-user-info">
+          <p id="userName">Loading...</p>
+          <span id="userRole">Owner</span>
+        </div>
+        <button class="btn-icon" onclick="logout()" title="Sign out">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Calendar Page (placeholder for Phase 2) -->
+      <section id="page-calendar" class="page">
+        <div class="page-header">
+          <div>
+            <h1>Calendar</h1>
+            <p>View and manage appointments</p>
+          </div>
+        </div>
+        <div class="card">
+          <div class="empty-state">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <h3>Calendar Coming Soon</h3>
+            <p>The interactive booking calendar will be available in Phase 2. Set up your services and staff first!</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Services Page -->
+      <section id="page-services" class="page hidden">
+        <div class="page-header">
+          <div>
+            <h1>Services</h1>
+            <p>Manage your service catalog</p>
+          </div>
+          <div class="flex gap-2">
+            <button class="btn btn-secondary" id="seedServicesBtn" onclick="seedServices()">Import Starters</button>
+            <button class="btn btn-primary" onclick="openServiceModal()">+ Add Service</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Service</th>
+                  <th>Category</th>
+                  <th>Duration</th>
+                  <th>Price</th>
+                  <th>Status</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="servicesTableBody">
+                <tr><td colspan="6" class="text-muted" style="text-align:center;padding:40px;">Loading services...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- Staff Page -->
+      <section id="page-staff" class="page hidden">
+        <div class="page-header">
+          <div>
+            <h1>Staff</h1>
+            <p>Manage your team</p>
+          </div>
+          <button class="btn btn-primary" onclick="openStaffModal()">+ Add Staff</button>
+        </div>
+        <div class="staff-grid" id="staffGrid">
+          <div class="text-muted" style="padding:40px;text-align:center;">Loading staff...</div>
+        </div>
+      </section>
+
+      <!-- Clients Page -->
+      <section id="page-clients" class="page hidden">
+        <div class="page-header">
+          <div>
+            <h1>Clients</h1>
+            <p>Your client directory</p>
+          </div>
+          <button class="btn btn-primary" onclick="openClientModal()">+ Add Client</button>
+        </div>
+        <div class="card">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Phone</th>
+                  <th>No-Shows</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="clientsTableBody">
+                <tr><td colspan="5" class="text-muted" style="text-align:center;padding:40px;">Loading clients...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- Settings Page -->
+      <section id="page-settings" class="page hidden">
+        <div class="page-header">
+          <div>
+            <h1>Settings</h1>
+            <p>Business profile &amp; hours</p>
+          </div>
+        </div>
+
+        <!-- Business Profile Card -->
+        <div class="card" style="margin-bottom: 24px;">
+          <div class="card-header">
+            <h2>Business Profile</h2>
+            <button class="btn btn-primary btn-sm" onclick="saveBusiness()">Save Changes</button>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="bizName">Business Name</label>
+              <input type="text" id="bizName">
+            </div>
+            <div class="form-group">
+              <label for="bizSlug">URL Slug</label>
+              <input type="text" id="bizSlug" oninput="this.value = this.value.toLowerCase().replace(/[^a-z0-9-]/g, '')">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="bizEmail">Email</label>
+              <input type="email" id="bizEmail">
+            </div>
+            <div class="form-group">
+              <label for="bizPhone">Phone</label>
+              <input type="tel" id="bizPhone">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="bizAddress">Address</label>
+            <input type="text" id="bizAddress" placeholder="123 Main St, Minot, ND">
+          </div>
+          <div class="form-row-3">
+            <div class="form-group">
+              <label for="bizTimezone">Timezone</label>
+              <select id="bizTimezone">
+                <option value="America/Chicago">Central (Chicago)</option>
+                <option value="America/New_York">Eastern (New York)</option>
+                <option value="America/Denver">Mountain (Denver)</option>
+                <option value="America/Los_Angeles">Pacific (LA)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="bizBrandColor">Brand Color</label>
+              <input type="color" id="bizBrandColor" value="#8CC63F">
+            </div>
+            <div class="form-group">
+              <label for="bizLogo">Logo URL</label>
+              <input type="text" id="bizLogo" placeholder="https://...">
+            </div>
+          </div>
+        </div>
+
+        <!-- Business Hours Card -->
+        <div class="card">
+          <div class="card-header">
+            <h2>Business Hours</h2>
+            <button class="btn btn-primary btn-sm" onclick="saveHours()">Save Hours</button>
+          </div>
+          <div class="hours-grid" id="hoursGrid"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Service Modal -->
+  <div class="modal-overlay" id="serviceModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="serviceModalTitle">Add Service</h3>
+        <button class="btn-icon" onclick="closeModal('serviceModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="svcEditId">
+        <div class="form-group">
+          <label for="svcName">Service Name</label>
+          <input type="text" id="svcName" placeholder="Haircut">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="svcCategory">Category</label>
+            <input type="text" id="svcCategory" placeholder="Cuts">
+          </div>
+          <div class="form-group">
+            <label for="svcColor">Color</label>
+            <input type="color" id="svcColor" value="#8CC63F">
+          </div>
+        </div>
+        <div class="form-row-3">
+          <div class="form-group">
+            <label for="svcDuration">Duration (min)</label>
+            <input type="number" id="svcDuration" min="5" step="5" value="30">
+          </div>
+          <div class="form-group">
+            <label for="svcBuffer">Buffer (min)</label>
+            <input type="number" id="svcBuffer" min="0" step="5" value="0">
+          </div>
+          <div class="form-group">
+            <label for="svcPrice">Price ($)</label>
+            <input type="number" id="svcPrice" min="0" step="0.01">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="svcDescription">Description</label>
+          <textarea id="svcDescription" placeholder="Optional description"></textarea>
+        </div>
+        <div class="form-group" style="display:flex;align-items:center;gap:12px;">
+          <label class="toggle" style="margin-bottom:0;">
+            <input type="checkbox" id="svcPopular">
+            <span class="toggle-slider"></span>
+          </label>
+          <span style="font-size:13px;">Mark as Popular</span>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('serviceModal')">Cancel</button>
+        <button class="btn btn-primary" onclick="saveService()">Save Service</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Staff Modal -->
+  <div class="modal-overlay" id="staffModal">
+    <div class="modal" style="max-width:640px;">
+      <div class="modal-header">
+        <h3 id="staffModalTitle">Add Staff Member</h3>
+        <button class="btn-icon" onclick="closeModal('staffModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="staffEditId">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="staffName">Name</label>
+            <input type="text" id="staffName" placeholder="Jane Doe">
+          </div>
+          <div class="form-group">
+            <label for="staffRole">Role</label>
+            <input type="text" id="staffRole" placeholder="Barber" value="staff">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="staffEmail">Email</label>
+            <input type="email" id="staffEmail" placeholder="jane@shop.com">
+          </div>
+          <div class="form-group">
+            <label for="staffPhone">Phone</label>
+            <input type="tel" id="staffPhone">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="staffPhoto">Photo URL</label>
+          <input type="text" id="staffPhoto" placeholder="https://...">
+        </div>
+
+        <!-- Staff Availability -->
+        <div class="form-group" style="margin-top:20px;">
+          <label>Working Hours</label>
+          <div class="hours-grid" id="staffHoursGrid"></div>
+        </div>
+
+        <!-- Staff Services -->
+        <div class="form-group" style="margin-top:20px;">
+          <label>Services Offered</label>
+          <div id="staffServicesChecklist" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('staffModal')">Cancel</button>
+        <button class="btn btn-primary" onclick="saveStaff()">Save Staff</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Client Modal -->
+  <div class="modal-overlay" id="clientModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="clientModalTitle">Add Client</h3>
+        <button class="btn-icon" onclick="closeModal('clientModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="clientEditId">
+        <div class="form-group">
+          <label for="clientName">Name</label>
+          <input type="text" id="clientName" placeholder="John Doe">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="clientEmail">Email</label>
+            <input type="email" id="clientEmail">
+          </div>
+          <div class="form-group">
+            <label for="clientPhone">Phone</label>
+            <input type="tel" id="clientPhone">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="clientNotes">Notes</label>
+          <textarea id="clientNotes" placeholder="Preferences, allergies, etc."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('clientModal')">Cancel</button>
+        <button class="btn btn-primary" onclick="saveClient()">Save Client</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="/js/dashboard.js"></script>
+</body>
+</html>

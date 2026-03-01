@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BoredRoom Booking</title>
+  <link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+  <div class="login-container">
+    <div class="login-box">
+      <div class="login-logo">
+        <h1>BOREDROOM</h1>
+        <p>Booking Platform</p>
+      </div>
+
+      <!-- Login Form -->
+      <div class="login-card" id="loginForm">
+        <div class="login-error" id="loginError"></div>
+        <div class="form-group">
+          <label for="loginEmail">Email</label>
+          <input type="email" id="loginEmail" placeholder="you@business.com" autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label for="loginPassword">Password</label>
+          <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password">
+        </div>
+        <button class="btn btn-primary" id="loginBtn" onclick="handleLogin()">Sign In</button>
+        <div class="login-register-link">
+          New here? <a href="#" onclick="showRegister()">Create an account</a>
+        </div>
+      </div>
+
+      <!-- Register Form -->
+      <div class="login-card hidden" id="registerForm">
+        <div class="login-error" id="registerError"></div>
+        <div class="form-group">
+          <label for="regBizName">Business Name</label>
+          <input type="text" id="regBizName" placeholder="Blade & Co Barbershop">
+        </div>
+        <div class="form-group">
+          <label for="regSlug">URL Slug</label>
+          <input type="text" id="regSlug" placeholder="blade-co" oninput="this.value = this.value.toLowerCase().replace(/[^a-z0-9-]/g, '')">
+        </div>
+        <div class="form-group">
+          <label for="regName">Your Name</label>
+          <input type="text" id="regName" placeholder="John Smith">
+        </div>
+        <div class="form-group">
+          <label for="regEmail">Email</label>
+          <input type="email" id="regEmail" placeholder="you@business.com">
+        </div>
+        <div class="form-group">
+          <label for="regPassword">Password</label>
+          <input type="password" id="regPassword" placeholder="Min 8 characters">
+        </div>
+        <button class="btn btn-primary" id="registerBtn" onclick="handleRegister()">Create Account</button>
+        <div class="login-register-link">
+          Already have an account? <a href="#" onclick="showLogin()">Sign in</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/auth.js"></script>
+</body>
+</html>
