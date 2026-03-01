@@ -50,6 +50,38 @@
 
     <!-- Main Content -->
     <main class="main-content">
+      <!-- Dashboard Stats -->
+      <div id="dashStats" class="dash-stats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:24px;">
+        <div class="card" style="padding:16px;text-align:center;">
+          <div class="text-sm text-muted" style="margin-bottom:4px;">Clients Today</div>
+          <div style="font-size:28px;font-weight:700;" id="statClientsToday">—</div>
+        </div>
+        <div class="card" style="padding:16px;text-align:center;">
+          <div class="text-sm text-muted" style="margin-bottom:4px;">This Week</div>
+          <div style="font-size:28px;font-weight:700;" id="statWeekBookings">—</div>
+        </div>
+        <div class="card" style="padding:16px;text-align:center;">
+          <div class="text-sm text-muted" style="margin-bottom:4px;">Revenue (Week)</div>
+          <div style="font-size:28px;font-weight:700;color:var(--gold);" id="statWeekRevenue">—</div>
+        </div>
+        <div class="card" style="padding:16px;text-align:center;">
+          <div class="text-sm text-muted" style="margin-bottom:4px;">Total Clients</div>
+          <div style="font-size:28px;font-weight:700;" id="statTotalClients">—</div>
+        </div>
+        <div class="card" style="padding:16px;text-align:center;">
+          <div class="text-sm text-muted" style="margin-bottom:4px;">New This Month</div>
+          <div style="font-size:28px;font-weight:700;color:var(--gold);" id="statNewMonth">—</div>
+        </div>
+      </div>
+
+      <!-- Upcoming Appointments -->
+      <div class="card" id="upcomingWidget" style="margin-bottom:24px;display:none;">
+        <div class="card-header">
+          <h2>Upcoming Appointments</h2>
+        </div>
+        <div id="upcomingList"></div>
+      </div>
+
       <!-- Calendar Page -->
       <section id="page-calendar" class="page">
         <div class="page-header">
@@ -145,7 +177,11 @@
             <h1>Clients</h1>
             <p>Your client directory</p>
           </div>
-          <button class="btn btn-primary" onclick="openClientModal()">+ Add Client</button>
+          <div class="flex gap-2">
+            <input type="text" id="clientSearch" placeholder="Search clients..." style="width:220px;" oninput="searchClientsTable(this.value)">
+            <a href="#" onclick="exportClients()" class="btn btn-secondary btn-sm">Export CSV</a>
+            <button class="btn btn-primary" onclick="openClientModal()">+ Add Client</button>
+          </div>
         </div>
         <div class="card">
           <div class="table-wrap">
@@ -155,12 +191,15 @@
                   <th>Name</th>
                   <th>Email</th>
                   <th>Phone</th>
+                  <th>Visits</th>
+                  <th>Total Spend</th>
+                  <th>Last Visit</th>
                   <th>No-Shows</th>
                   <th></th>
                 </tr>
               </thead>
               <tbody id="clientsTableBody">
-                <tr><td colspan="5" class="text-muted" style="text-align:center;padding:40px;">Loading clients...</td></tr>
+                <tr><td colspan="8" class="text-muted" style="text-align:center;padding:40px;">Loading clients...</td></tr>
               </tbody>
             </table>
           </div>

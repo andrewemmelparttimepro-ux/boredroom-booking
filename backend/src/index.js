@@ -50,6 +50,40 @@ app.get('/api/health', async (req, res) => {
 // Serve frontend
 app.use(express.static(path.join(__dirname, '../../frontend')));
 
+// Dashboard stats endpoint
+app.get('/api/dashboard/stats', require('./middleware/auth').verifyToken, async (req, res) => {
+  try {
+    const bizId = req.businessId;
+    const now = new Date();
+    const todayStr = now.toISOString().split('T')[0];
+    const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    const monthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
+
+    const [clientsToday, newThisMonth, totalClients, weekBookings, weekRevenue, upcoming, atRisk] = await Promise.all([
+      pool.query(`SELECT COUNT(DISTINCT client_id) FROM appointments WHERE business_id=$1 AND start_time::date=$2 AND status NOT IN ('cancelled')`, [bizId, todayStr]),
+      pool.query(`SELECT COUNT(*) FROM clients WHERE business_id=$1 AND created_at >= $2`, [bizId, monthStart]),
+      pool.query(`SELECT COUNT(*) FROM clients WHERE business_id=$1`, [bizId]),
+      pool.query(`SELECT COUNT(*) FROM appointments WHERE business_id=$1 AND start_time::date >= $2 AND status NOT IN ('cancelled')`, [bizId, weekAgo]),
+      pool.query(`SELECT COALESCE(SUM(sv.price),0) as total FROM appointments a JOIN services sv ON a.service_id=sv.id WHERE a.business_id=$1 AND a.start_time::date >= $2 AND a.status='completed'`, [bizId, weekAgo]),
+      pool.query(`SELECT a.*, c.name as client_name, s.name as staff_name, sv.name as service_name FROM appointments a LEFT JOIN clients c ON a.client_id=c.id LEFT JOIN staff s ON a.staff_id=s.id LEFT JOIN services sv ON a.service_id=sv.id WHERE a.business_id=$1 AND a.start_time > NOW() AND a.status NOT IN ('cancelled') ORDER BY a.start_time LIMIT 5`, [bizId]),
+      pool.query(`SELECT COUNT(*) FROM clients c WHERE c.business_id=$1 AND NOT EXISTS (SELECT 1 FROM appointments a WHERE a.client_id=c.id AND a.start_time > NOW() - interval '60 days' AND a.status NOT IN ('cancelled'))`, [bizId]),
+    ]);
+
+    res.json({
+      clientsToday: parseInt(clientsToday.rows[0].count),
+      newThisMonth: parseInt(newThisMonth.rows[0].count),
+      totalClients: parseInt(totalClients.rows[0].count),
+      weekBookings: parseInt(weekBookings.rows[0].count),
+      weekRevenue: parseFloat(weekRevenue.rows[0].total),
+      upcoming: upcoming.rows,
+      atRisk: parseInt(atRisk.rows[0].count),
+    });
+  } catch (err) {
+    console.error('Dashboard stats error:', err);
+    res.status(500).json({ error: 'Failed to load stats' });
+  }
+});
+
 // Public booking widget route
 app.get('/book/:slug', (req, res) => {
   res.sendFile(path.join(__dirname, '../../frontend/book.html'));

@@ -347,24 +347,12 @@ async function loadClients() {
 function renderClientsTable() {
   const tbody = document.getElementById('clientsTableBody');
   if (clientsCache.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state">
+    tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state">
       <h3>No clients yet</h3><p>Clients will appear here when they book or you add them.</p>
     </div></td></tr>`;
     return;
   }
-
-  tbody.innerHTML = clientsCache.map(c => `
-    <tr>
-      <td><strong>${esc(c.name)}</strong></td>
-      <td class="text-muted">${esc(c.email || '—')}</td>
-      <td class="text-muted">${esc(c.phone || '—')}</td>
-      <td>${c.no_show_count > 0 ? `<span class="badge badge-inactive">${c.no_show_count}</span>` : '0'}</td>
-      <td style="text-align:right;">
-        <button class="btn-icon" title="Edit" onclick="editClient('${c.id}')">✎</button>
-        <button class="btn-icon" title="Delete" onclick="deleteClient('${c.id}')">✕</button>
-      </td>
-    </tr>
-  `).join('');
+  renderClientsTableFiltered(clientsCache);
 }
 
 function openClientModal(client = null) {
@@ -1002,7 +990,78 @@ async function saveBlockTime() {
   }
 }
 
+// ═══════════════════════════════════════════
+// DASHBOARD STATS
+// ═══════════════════════════════════════════
+async function loadDashStats() {
+  try {
+    const res = await apiFetch('/dashboard/stats');
+    if (!res || !res.ok) return;
+    const stats = await res.json();
+    
+    document.getElementById('statClientsToday').textContent = stats.clientsToday;
+    document.getElementById('statWeekBookings').textContent = stats.weekBookings;
+    document.getElementById('statWeekRevenue').textContent = '$' + stats.weekRevenue.toFixed(0);
+    document.getElementById('statTotalClients').textContent = stats.totalClients;
+    document.getElementById('statNewMonth').textContent = stats.newThisMonth;
+
+    // Upcoming appointments widget
+    if (stats.upcoming && stats.upcoming.length > 0) {
+      document.getElementById('upcomingWidget').style.display = 'block';
+      document.getElementById('upcomingList').innerHTML = stats.upcoming.map(a => {
+        const start = new Date(a.start_time);
+        const timeStr = start.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'UTC' });
+        const dateStr = start.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' });
+        return `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);">
+          <div><strong>${esc(a.client_name || 'Walk-in')}</strong> <span class="text-muted text-sm">— ${esc(a.service_name || '')}</span></div>
+          <div class="text-sm">${dateStr} at ${timeStr} <span class="text-muted">with ${esc(a.staff_name || '')}</span></div>
+        </div>`;
+      }).join('');
+    }
+  } catch (e) {
+    console.error('Stats error:', e);
+  }
+}
+
+function searchClientsTable(query) {
+  const q = query.toLowerCase();
+  const filtered = q ? clientsCache.filter(c =>
+    (c.name || '').toLowerCase().includes(q) ||
+    (c.email || '').toLowerCase().includes(q) ||
+    (c.phone || '').includes(q)
+  ) : clientsCache;
+  renderClientsTableFiltered(filtered);
+}
+
+function renderClientsTableFiltered(list) {
+  const tbody = document.getElementById('clientsTableBody');
+  if (list.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="8" class="text-muted" style="text-align:center;padding:40px;">No clients found</td></tr>';
+    return;
+  }
+  tbody.innerHTML = list.map(c => {
+    const lastVisit = c.last_visit ? new Date(c.last_visit).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
+    return `<tr>
+      <td><strong>${esc(c.name)}</strong></td>
+      <td class="text-muted">${esc(c.email || '—')}</td>
+      <td class="text-muted">${esc(c.phone || '—')}</td>
+      <td>${c.visit_count || 0}</td>
+      <td>${c.total_spend ? '$' + Number(c.total_spend).toFixed(0) : '$0'}</td>
+      <td class="text-muted">${lastVisit}</td>
+      <td>${c.no_show_count > 0 ? '<span class="badge badge-inactive">' + c.no_show_count + '</span>' : '0'}</td>
+      <td style="text-align:right;">
+        <button class="btn-icon" title="Edit" onclick="editClient('${c.id}')">✎</button>
+        <button class="btn-icon" title="Delete" onclick="deleteClient('${c.id}')">✕</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+async function exportClients() {
+  window.open(API + '/clients/export/csv', '_blank');
+}
+
 // ── Boot ──
 init();
-// Load calendar on first visit
+loadDashStats();
 setTimeout(() => loadCalendar(), 500);

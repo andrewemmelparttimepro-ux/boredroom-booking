@@ -5,13 +5,36 @@ const { validateBody } = require('../middleware/validate');
 
 const router = express.Router();
 
-// GET /api/clients
+// GET /api/clients?search=&sort=name|last_visit|spend
 router.get('/', verifyToken, async (req, res) => {
   try {
-    const result = await pool.query(
-      'SELECT * FROM clients WHERE business_id = $1 ORDER BY name',
-      [req.businessId]
-    );
+    const { search, sort } = req.query;
+    let query = `
+      SELECT c.*,
+        COUNT(DISTINCT a.id) FILTER (WHERE a.status NOT IN ('cancelled')) as visit_count,
+        COALESCE(SUM(sv.price) FILTER (WHERE a.status IN ('completed')), 0) as total_spend,
+        MAX(a.start_time) FILTER (WHERE a.status NOT IN ('cancelled')) as last_visit
+      FROM clients c
+      LEFT JOIN appointments a ON c.id = a.client_id
+      LEFT JOIN services sv ON a.service_id = sv.id
+      WHERE c.business_id = $1
+    `;
+    const values = [req.businessId];
+    let idx = 2;
+
+    if (search) {
+      query += ` AND (c.name ILIKE $${idx} OR c.email ILIKE $${idx} OR c.phone ILIKE $${idx})`;
+      values.push(`%${search}%`);
+      idx++;
+    }
+
+    query += ' GROUP BY c.id';
+
+    if (sort === 'last_visit') query += ' ORDER BY last_visit DESC NULLS LAST';
+    else if (sort === 'spend') query += ' ORDER BY total_spend DESC';
+    else query += ' ORDER BY c.name';
+
+    const result = await pool.query(query, values);
     res.json(result.rows);
   } catch (err) {
     console.error('Get clients error:', err);
@@ -50,6 +73,54 @@ router.get('/:id', verifyToken, async (req, res) => {
   } catch (err) {
     console.error('Get client error:', err);
     res.status(500).json({ error: 'Failed to fetch client' });
+  }
+});
+
+// GET /api/clients/:id/appointments — booking history
+router.get('/:id/appointments', verifyToken, async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT a.*, s.name as staff_name, sv.name as service_name, sv.price as service_price, sv.color as service_color
+       FROM appointments a
+       LEFT JOIN staff s ON a.staff_id = s.id
+       LEFT JOIN services sv ON a.service_id = sv.id
+       WHERE a.client_id = $1 AND a.business_id = $2
+       ORDER BY a.start_time DESC`,
+      [req.params.id, req.businessId]
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Get client appointments error:', err);
+    res.status(500).json({ error: 'Failed to fetch client appointments' });
+  }
+});
+
+// GET /api/clients/export — CSV download
+router.get('/export/csv', verifyToken, async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT c.name, c.phone, c.email, c.notes, c.no_show_count,
+              COUNT(DISTINCT a.id) FILTER (WHERE a.status NOT IN ('cancelled')) as visit_count,
+              COALESCE(SUM(sv.price) FILTER (WHERE a.status IN ('completed')), 0) as total_spend
+       FROM clients c
+       LEFT JOIN appointments a ON c.id = a.client_id
+       LEFT JOIN services sv ON a.service_id = sv.id
+       WHERE c.business_id = $1
+       GROUP BY c.id
+       ORDER BY c.name`,
+      [req.businessId]
+    );
+
+    const csv = 'Name,Phone,Email,Visits,Total Spend,No-Shows,Notes\n' +
+      result.rows.map(r =>
+        `"${(r.name || '').replace(/"/g, '""')}","${r.phone || ''}","${r.email || ''}",${r.visit_count},${r.total_spend},${r.no_show_count},"${(r.notes || '').replace(/"/g, '""')}"`
+      ).join('\n');
+
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', 'attachment; filename=clients.csv');
+    res.send(csv);
+  } catch (err) {
+    res.status(500).json({ error: 'Export failed' });
   }
 });
 
