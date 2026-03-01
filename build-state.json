@@ -1,6 +1,6 @@
 {
   "phase1": "done",
-  "phase2": "pending",
+  "phase2": "done",
   "phase3": "pending",
   "phase4": "pending",
   "phase5": "pending",
@@ -10,5 +10,6 @@
   "render_url": "https://boredroom-booking.onrender.com",
   "render_service_id": "srv-d6huabpaae7s73c5h3hg",
   "render_db_id": "dpg-d6g6c51drdic738uhfpg-a",
-  "phase1_errors": ["External DB connection from local machine fails (Render free-tier restriction) — migration runs on Render startup instead"]
+  "phase1_errors": ["External DB connection from local machine fails (Render free-tier restriction) — migration runs on Render startup instead"],
+  "phase2_errors": []
 }

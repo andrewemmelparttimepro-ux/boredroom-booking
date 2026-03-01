@@ -4,17 +4,112 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Book an Appointment</title>
-  <link rel="stylesheet" href="/css/app.css">
+  <link rel="stylesheet" href="/css/book.css">
 </head>
 <body>
-  <div class="login-container">
-    <div class="login-box">
-      <div class="login-logo">
-        <h1>BOOKING</h1>
-        <p>Public booking widget — Coming in Phase 3</p>
+  <div class="book-container" id="bookApp">
+    <div class="loading-dots" id="loadingScreen"><span></span><span></span><span></span></div>
+
+    <!-- Main booking flow (hidden until loaded) -->
+    <div class="hidden" id="bookFlow">
+      <div class="book-header">
+        <h1 id="bizName">Loading...</h1>
+        <p id="bizInfo"></p>
+      </div>
+
+      <div class="progress-bar">
+        <div class="progress-step active" id="prog1"></div>
+        <div class="progress-step" id="prog2"></div>
+        <div class="progress-step" id="prog3"></div>
+        <div class="progress-step" id="prog4"></div>
+      </div>
+
+      <!-- Step 1: Service -->
+      <div id="step1">
+        <div class="step-label">Choose a Service</div>
+        <div class="category-tabs" id="categoryTabs"></div>
+        <div class="service-grid" id="serviceGrid"></div>
+      </div>
+
+      <!-- Step 2: Staff -->
+      <div id="step2" class="hidden">
+        <div class="step-label">Choose Your Specialist</div>
+        <div class="staff-pick-grid" id="staffPickGrid"></div>
+      </div>
+
+      <!-- Step 3: Date & Time -->
+      <div id="step3" class="hidden">
+        <div class="step-label">Pick a Date & Time</div>
+        <div class="mini-calendar" id="miniCalendar"></div>
+        <div id="timeSlotsArea">
+          <div class="no-slots-msg">Select a date above to see available times</div>
+        </div>
+      </div>
+
+      <!-- Step 4: Your Info -->
+      <div id="step4" class="hidden">
+        <div class="step-label">Your Information</div>
+        <div class="booking-summary" id="bookingSummary"></div>
+        <div class="book-form">
+          <div id="returnClientMsg" class="hidden" style="background:var(--accent-dim);border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:14px;color:var(--accent);"></div>
+          <div class="form-group">
+            <label>Name *</label>
+            <input type="text" id="clientName" placeholder="Your full name">
+          </div>
+          <div class="form-group">
+            <label>Email *</label>
+            <input type="email" id="clientEmail" placeholder="you@email.com" onblur="checkReturnClient()">
+          </div>
+          <div class="form-group">
+            <label>Phone *</label>
+            <input type="tel" id="clientPhone" placeholder="(555) 123-4567">
+          </div>
+          <div class="form-group">
+            <label>Notes (optional)</label>
+            <textarea id="clientNotes" rows="2" placeholder="Any special requests?"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="book-nav" id="bookNav">
+        <button class="book-btn book-btn-secondary hidden" id="backBtn" onclick="bookBack()">Back</button>
+        <button class="book-btn book-btn-primary" id="nextBtn" onclick="bookNext()">Continue</button>
+      </div>
+    </div>
+
+    <!-- Confirmation Screen -->
+    <div class="hidden" id="confirmScreen">
+      <div class="confirm-screen">
+        <div class="confirm-icon">✓</div>
+        <h2>You're Booked!</h2>
+        <p>Your appointment has been confirmed. We'll see you soon.</p>
+        <div class="confirm-details" id="confirmDetails"></div>
+        <div class="cal-links" id="calLinks"></div>
+        <p style="font-size:13px;color:var(--text-muted);">Need to make changes? Check your email for cancel/reschedule links.</p>
+      </div>
+    </div>
+
+    <!-- Cancel Screen -->
+    <div class="hidden" id="cancelScreen">
+      <div class="confirm-screen">
+        <div class="confirm-icon" style="background:rgba(192,57,43,0.12);color:#C0392B;">✕</div>
+        <h2 id="cancelTitle">Cancel Appointment</h2>
+        <div class="confirm-details" id="cancelDetails"></div>
+        <button class="book-btn book-btn-primary" id="cancelBtn" onclick="confirmCancel()" style="background:#C0392B;max-width:300px;margin:0 auto;">Cancel Appointment</button>
+        <p id="cancelMsg" class="hidden" style="margin-top:16px;"></p>
+      </div>
+    </div>
+
+    <!-- Error -->
+    <div class="hidden" id="errorScreen">
+      <div class="confirm-screen">
+        <div class="confirm-icon" style="background:rgba(192,57,43,0.12);color:#C0392B;">!</div>
+        <h2>Something went wrong</h2>
+        <p id="errorMsg">Business not found.</p>
       </div>
     </div>
   </div>
+
   <script src="/js/book.js"></script>
 </body>
 </html>
