@@ -50,20 +50,44 @@
 
     <!-- Main Content -->
     <main class="main-content">
-      <!-- Calendar Page (placeholder for Phase 2) -->
+      <!-- Calendar Page -->
       <section id="page-calendar" class="page">
         <div class="page-header">
           <div>
             <h1>Calendar</h1>
-            <p>View and manage appointments</p>
+            <p id="calendarDateLabel">Today</p>
+          </div>
+          <div class="flex gap-2">
+            <button class="btn btn-secondary btn-sm" onclick="calPrev()">← Prev</button>
+            <button class="btn btn-secondary btn-sm" onclick="calToday()">Today</button>
+            <button class="btn btn-secondary btn-sm" onclick="calNext()">Next →</button>
+            <input type="date" id="calDatePicker" style="width:160px;" onchange="calGoToDate(this.value)">
+            <select id="calViewSelect" onchange="calSwitchView(this.value)" style="width:100px;">
+              <option value="day">Day</option>
+              <option value="week">Week</option>
+            </select>
+            <button class="btn btn-secondary btn-sm" onclick="openBlockTimeModal()">Block Time</button>
+            <button class="btn btn-primary" onclick="openNewAppointmentModal()">+ Appointment</button>
           </div>
         </div>
-        <div class="card">
-          <div class="empty-state">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-            <h3>Calendar Coming Soon</h3>
-            <p>The interactive booking calendar will be available in Phase 2. Set up your services and staff first!</p>
+
+        <!-- Day View -->
+        <div class="card" id="calDayView">
+          <div class="cal-day-grid" id="calDayGrid"></div>
+        </div>
+
+        <!-- Week View -->
+        <div class="card hidden" id="calWeekView">
+          <div class="cal-week-grid" id="calWeekGrid"></div>
+        </div>
+
+        <!-- Appointment Detail Slide-out -->
+        <div class="appt-detail-panel hidden" id="apptDetailPanel">
+          <div class="appt-detail-header">
+            <h3 id="apptDetailTitle">Appointment</h3>
+            <button class="btn-icon" onclick="closeApptDetail()">&times;</button>
           </div>
+          <div class="appt-detail-body" id="apptDetailBody"></div>
         </div>
       </section>
 
@@ -355,6 +379,112 @@
       <div class="modal-footer">
         <button class="btn btn-secondary" onclick="closeModal('clientModal')">Cancel</button>
         <button class="btn btn-primary" onclick="saveClient()">Save Client</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- New Appointment Modal -->
+  <div class="modal-overlay" id="newApptModal">
+    <div class="modal" style="max-width:600px;">
+      <div class="modal-header">
+        <h3>New Appointment</h3>
+        <button class="btn-icon" onclick="closeModal('newApptModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <!-- Step 1: Service -->
+        <div id="apptStep1">
+          <label>Select Service</label>
+          <div id="apptServiceList" class="appt-service-list"></div>
+        </div>
+        <!-- Step 2: Staff -->
+        <div id="apptStep2" class="hidden">
+          <label>Select Staff</label>
+          <div id="apptStaffList" class="appt-staff-list"></div>
+        </div>
+        <!-- Step 3: Date & Time -->
+        <div id="apptStep3" class="hidden">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Date</label>
+              <input type="date" id="apptDate" onchange="loadApptSlots()">
+            </div>
+            <div class="form-group">
+              <label style="display:flex;align-items:center;gap:8px;">
+                Time
+                <label class="toggle" style="margin-bottom:0;"><input type="checkbox" id="apptManualTime" onchange="toggleManualTime()"><span class="toggle-slider"></span></label>
+                <span class="text-sm text-muted">Manual</span>
+              </label>
+              <input type="time" id="apptManualTimeInput" class="hidden" step="900">
+            </div>
+          </div>
+          <div id="apptSlotGrid" class="appt-slot-grid"></div>
+        </div>
+        <!-- Step 4: Client -->
+        <div id="apptStep4" class="hidden">
+          <label>Client</label>
+          <input type="text" id="apptClientSearch" placeholder="Search by name, email, or phone..." oninput="searchClients(this.value)">
+          <div id="apptClientResults" class="appt-client-results"></div>
+          <div style="margin-top:12px;">
+            <button class="btn btn-secondary btn-sm" onclick="showQuickAddClient()">+ New Client</button>
+          </div>
+          <div id="quickAddClientForm" class="hidden" style="margin-top:12px;padding:16px;border:1px solid var(--border);border-radius:var(--radius);">
+            <div class="form-group"><label>Name</label><input type="text" id="quickClientName"></div>
+            <div class="form-row">
+              <div class="form-group"><label>Email</label><input type="email" id="quickClientEmail"></div>
+              <div class="form-group"><label>Phone</label><input type="tel" id="quickClientPhone"></div>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="quickAddClient()">Add & Select</button>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="apptBackBtn" class="hidden" onclick="apptBack()">Back</button>
+        <button class="btn btn-primary" id="apptNextBtn" onclick="apptNext()">Next</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Block Time Modal -->
+  <div class="modal-overlay" id="blockTimeModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Block Time</h3>
+        <button class="btn-icon" onclick="closeModal('blockTimeModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Staff Member</label>
+          <select id="blockStaffSelect"></select>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Date</label>
+            <input type="date" id="blockDate">
+          </div>
+          <div class="form-group">
+            <label>Start Time</label>
+            <input type="time" id="blockStartTime" step="900">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Duration</label>
+          <select id="blockDuration">
+            <option value="30">30 minutes</option>
+            <option value="60" selected>1 hour</option>
+            <option value="90">1.5 hours</option>
+            <option value="120">2 hours</option>
+            <option value="240">4 hours</option>
+            <option value="480">Full day</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Notes</label>
+          <input type="text" id="blockNotes" placeholder="Lunch break, meeting, etc.">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('blockTimeModal')">Cancel</button>
+        <button class="btn btn-primary" onclick="saveBlockTime()">Block Time</button>
       </div>
     </div>
   </div>

@@ -507,6 +507,234 @@ tr:hover td { background: rgba(184, 170, 150, 0.05); }
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
+/* ── Calendar ── */
+.cal-day-grid {
+  position: relative;
+  display: grid;
+  grid-template-columns: 60px 1fr;
+  min-height: 900px;
+}
+.cal-time-col {
+  border-right: 1px solid var(--border);
+}
+.cal-time-label {
+  height: 60px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  padding-right: 8px;
+  font-size: 11px;
+  color: var(--text-muted);
+  transform: translateY(-7px);
+}
+.cal-staff-cols {
+  display: grid;
+  position: relative;
+}
+.cal-staff-header {
+  display: grid;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+}
+.cal-staff-header-cell {
+  text-align: center;
+  padding: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  border-right: 1px solid var(--border);
+}
+.cal-staff-header-cell:last-child { border-right: none; }
+.cal-staff-col {
+  border-right: 1px solid var(--border);
+  position: relative;
+}
+.cal-staff-col:last-child { border-right: none; }
+.cal-hour-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  border-top: 1px solid var(--border);
+  pointer-events: none;
+}
+.cal-half-line {
+  border-top: 1px dashed rgba(30,30,30,0.6);
+}
+.cal-appt-block {
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 11px;
+  cursor: pointer;
+  overflow: hidden;
+  transition: var(--transition);
+  z-index: 5;
+  border-left: 3px solid;
+}
+.cal-appt-block:hover {
+  opacity: 0.9;
+  transform: scale(1.01);
+  z-index: 6;
+}
+.cal-appt-block .appt-time { font-weight: 600; }
+.cal-appt-block .appt-client { opacity: 0.85; }
+.cal-appt-block .appt-service { opacity: 0.7; font-size: 10px; }
+.cal-appt-block.status-blocked {
+  background: #1A1A1A !important;
+  border-left-color: var(--text-muted) !important;
+  opacity: 0.6;
+}
+
+/* Week view */
+.cal-week-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+  background: var(--border);
+}
+.cal-week-day {
+  background: var(--bg-card);
+  min-height: 120px;
+  padding: 12px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.cal-week-day:hover { background: var(--bg-card-alt); }
+.cal-week-day-header {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.cal-week-day-date {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.cal-week-day.is-today .cal-week-day-date {
+  color: var(--gold);
+}
+.cal-week-appt-pill {
+  background: var(--gold-dim);
+  border-radius: 4px;
+  padding: 3px 8px;
+  font-size: 11px;
+  margin-bottom: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Appointment detail panel */
+.appt-detail-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 380px;
+  height: 100vh;
+  background: var(--bg-card);
+  border-left: 1px solid var(--border);
+  box-shadow: -8px 0 32px rgba(0,0,0,0.4);
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  animation: slideInRight 0.2s ease;
+}
+.appt-detail-panel.hidden { display: none; }
+@keyframes slideInRight {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+.appt-detail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border);
+}
+.appt-detail-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+}
+.appt-detail-row {
+  margin-bottom: 16px;
+}
+.appt-detail-row label {
+  display: block;
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.appt-detail-row .value {
+  font-size: 14px;
+}
+
+/* Appointment booking steps */
+.appt-service-list, .appt-staff-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+.appt-option {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.appt-option:hover { border-color: var(--gold); }
+.appt-option.selected { border-color: var(--gold); background: var(--gold-dim); }
+.appt-option .opt-name { font-weight: 500; }
+.appt-option .opt-detail { font-size: 12px; color: var(--text-secondary); }
+
+.appt-slot-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+.appt-slot {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 8px;
+  text-align: center;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: var(--transition);
+}
+.appt-slot:hover { border-color: var(--gold); }
+.appt-slot.selected { background: var(--gold); color: #000; border-color: var(--gold); }
+
+.appt-client-results {
+  margin-top: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+.appt-client-option {
+  padding: 10px 12px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border);
+  transition: var(--transition);
+}
+.appt-client-option:hover { background: var(--bg-card-alt); }
+.appt-client-option .client-name { font-weight: 500; }
+.appt-client-option .client-info { font-size: 12px; color: var(--text-secondary); }
+
 /* ── Responsive ── */
 @media (max-width: 768px) {
   .sidebar { display: none; }
