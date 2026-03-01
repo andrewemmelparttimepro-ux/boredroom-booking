@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin — BoredRoom Booking</title>
+  <link rel="stylesheet" href="/css/app.css">
+  <style>
+    .admin-badge { background: var(--gold-dim); color: var(--gold); font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.1em; margin-left: 8px; }
+  </style>
+</head>
+<body>
+  <!-- Admin Login -->
+  <div class="login-container" id="adminLogin">
+    <div class="login-box">
+      <div class="login-logo">
+        <h1>BOREDROOM</h1>
+        <p>Platform Admin</p>
+      </div>
+      <div class="login-card">
+        <div class="login-error" id="adminError"></div>
+        <div class="form-group">
+          <label>Admin Secret</label>
+          <input type="password" id="adminSecret" placeholder="Enter admin secret">
+        </div>
+        <button class="btn btn-primary" style="width:100%;" onclick="adminLogin()">Access Admin Panel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Admin Panel -->
+  <div class="hidden" id="adminPanel">
+    <div class="dashboard">
+      <aside class="sidebar">
+        <div class="sidebar-logo">
+          <h2>BOREDROOM</h2>
+          <span>Admin <span class="admin-badge">SUPERADMIN</span></span>
+        </div>
+        <nav class="sidebar-nav">
+          <a href="#" class="active" data-page="overview" onclick="showAdminPage('overview')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+            Overview
+          </a>
+          <a href="#" data-page="businesses" onclick="showAdminPage('businesses')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+            Businesses
+          </a>
+        </nav>
+        <div class="sidebar-user">
+          <div class="sidebar-avatar" style="background:rgba(192,57,43,0.15);color:#C0392B;">⚡</div>
+          <div class="sidebar-user-info"><p>Super Admin</p><span>Platform Control</span></div>
+          <button class="btn-icon" onclick="location.reload()">↻</button>
+        </div>
+      </aside>
+      <main class="main-content">
+        <section id="admin-overview">
+          <div class="page-header"><div><h1>Platform Overview</h1><p>All BoredRoom Booking tenants</p></div></div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px;">
+            <div class="card" style="padding:20px;text-align:center;"><div class="text-sm text-muted">Businesses</div><div style="font-size:32px;font-weight:700;color:var(--gold);" id="adminBizCount">—</div></div>
+            <div class="card" style="padding:20px;text-align:center;"><div class="text-sm text-muted">Total Bookings</div><div style="font-size:32px;font-weight:700;" id="adminBookingCount">—</div></div>
+            <div class="card" style="padding:20px;text-align:center;"><div class="text-sm text-muted">Total Clients</div><div style="font-size:32px;font-weight:700;" id="adminClientCount">—</div></div>
+          </div>
+        </section>
+        <section id="admin-businesses" class="hidden">
+          <div class="page-header"><div><h1>All Businesses</h1></div></div>
+          <div class="card"><div class="table-wrap"><table><thead><tr><th>Name</th><th>Slug</th><th>Type</th><th>Clients</th><th>Bookings</th><th>Staff</th><th>Joined</th><th></th></tr></thead><tbody id="adminBizTable"><tr><td colspan="8" class="text-muted" style="text-align:center;padding:40px;">Loading...</td></tr></tbody></table></div></div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    const API = window.location.origin + '/api';
+    let adminToken = localStorage.getItem('bb_admin_token');
+
+    if (adminToken) { showPanel(); loadAdminData(); }
+
+    async function adminLogin() {
+      const secret = document.getElementById('adminSecret').value;
+      const res = await fetch(API + '/admin/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ secret }) });
+      if (res.ok) {
+        const data = await res.json();
+        adminToken = data.token;
+        localStorage.setItem('bb_admin_token', adminToken);
+        showPanel();
+        loadAdminData();
+      } else {
+        document.getElementById('adminError').textContent = 'Invalid secret';
+        document.getElementById('adminError').style.display = 'block';
+      }
+    }
+
+    function showPanel() {
+      document.getElementById('adminLogin').classList.add('hidden');
+      document.getElementById('adminPanel').classList.remove('hidden');
+    }
+
+    function showAdminPage(page) {
+      document.querySelectorAll('#adminPanel section').forEach(s => s.classList.add('hidden'));
+      document.getElementById('admin-' + page).classList.remove('hidden');
+      document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
+      document.querySelector(`[data-page="${page}"]`).classList.add('active');
+    }
+
+    async function loadAdminData() {
+      const headers = { Authorization: 'Bearer ' + adminToken };
+      const [statsRes, bizRes] = await Promise.all([
+        fetch(API + '/admin/stats', { headers }),
+        fetch(API + '/admin/businesses', { headers })
+      ]);
+
+      if (statsRes.ok) {
+        const stats = await statsRes.json();
+        document.getElementById('adminBizCount').textContent = stats.businesses;
+        document.getElementById('adminBookingCount').textContent = stats.totalBookings;
+        document.getElementById('adminClientCount').textContent = stats.totalClients;
+      }
+
+      if (bizRes.ok) {
+        const businesses = await bizRes.json();
+        document.getElementById('adminBizTable').innerHTML = businesses.map(b => `<tr>
+          <td><strong>${b.name}</strong></td>
+          <td class="text-muted">${b.slug}</td>
+          <td>${b.business_type || 'barbershop'}</td>
+          <td>${b.client_count}</td>
+          <td>${b.booking_count}</td>
+          <td>${b.staff_count}</td>
+          <td class="text-muted">${new Date(b.created_at).toLocaleDateString()}</td>
+          <td><button class="btn btn-secondary btn-sm" onclick="impersonate('${b.id}')">Enter</button></td>
+        </tr>`).join('') || '<tr><td colspan="8" class="text-muted" style="text-align:center;">No businesses yet</td></tr>';
+      }
+    }
+
+    async function impersonate(bizId) {
+      const res = await fetch(API + '/admin/impersonate/' + bizId, {
+        method: 'POST', headers: { Authorization: 'Bearer ' + adminToken }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        localStorage.setItem('bb_token', data.token);
+        window.open('/dashboard.html', '_blank');
+      }
+    }
+  </script>
+</body>
+</html>

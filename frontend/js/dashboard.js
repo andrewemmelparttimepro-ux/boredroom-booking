@@ -41,7 +41,8 @@ function showPage(page) {
   document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
   document.querySelector(`[data-page="${page}"]`).classList.add('active');
 
-  if (page === 'services') loadServices();
+  if (page === 'reports') loadReports();
+  else if (page === 'services') loadServices();
   else if (page === 'staff') loadStaff();
   else if (page === 'clients') loadClients();
   else if (page === 'settings') loadSettings();
@@ -1055,6 +1056,86 @@ function renderClientsTableFiltered(list) {
       </td>
     </tr>`;
   }).join('');
+}
+
+// ═══════════════════════════════════════════
+// REPORTS
+// ═══════════════════════════════════════════
+let revenueChartInstance = null;
+
+async function loadReports() {
+  const period = document.getElementById('reportPeriod').value;
+
+  // Revenue
+  const revRes = await apiFetch(`/reports/revenue?period=${period}`);
+  if (revRes && revRes.ok) {
+    const rev = await revRes.json();
+    document.getElementById('repRevenue').textContent = '$' + Number(rev.total).toFixed(0);
+    document.getElementById('repBookings').textContent = rev.count;
+    document.getElementById('repAvg').textContent = '$' + Number(rev.avg_per_booking).toFixed(0);
+    document.getElementById('repCancelRate').textContent = rev.cancellationRate + '%';
+
+    // Chart
+    if (revenueChartInstance) revenueChartInstance.destroy();
+    const ctx = document.getElementById('revenueChart').getContext('2d');
+    revenueChartInstance = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: (rev.byDay || []).map(d => d.date),
+        datasets: [{
+          label: 'Revenue',
+          data: (rev.byDay || []).map(d => parseFloat(d.amount)),
+          borderColor: '#B8AA96',
+          backgroundColor: 'rgba(184,170,150,0.1)',
+          fill: true,
+          tension: 0.3,
+          pointRadius: 3,
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { ticks: { color: '#555' }, grid: { color: '#1E1E1E' } },
+          y: { ticks: { color: '#555', callback: v => '$' + v }, grid: { color: '#1E1E1E' } }
+        }
+      }
+    });
+  }
+
+  // Services
+  const svcRes = await apiFetch('/reports/services');
+  if (svcRes && svcRes.ok) {
+    const svcs = await svcRes.json();
+    document.getElementById('repServicesTable').innerHTML = svcs.map(s => `<tr>
+      <td><strong>${esc(s.name)}</strong> <span class="text-muted text-sm">${esc(s.category || '')}</span></td>
+      <td>${s.booking_count}</td>
+      <td>$${Number(s.revenue).toFixed(0)}</td>
+    </tr>`).join('') || '<tr><td colspan="3" class="text-muted">No data</td></tr>';
+  }
+
+  // Staff
+  const staffRes = await apiFetch('/reports/staff');
+  if (staffRes && staffRes.ok) {
+    const staff = await staffRes.json();
+    document.getElementById('repStaffTable').innerHTML = staff.map(s => `<tr>
+      <td><strong>${esc(s.name)}</strong></td>
+      <td>${s.bookings}</td>
+      <td>$${Number(s.revenue).toFixed(0)}</td>
+      <td>${s.noShowRate}</td>
+    </tr>`).join('') || '<tr><td colspan="4" class="text-muted">No data</td></tr>';
+  }
+
+  // Sources
+  const bookRes = await apiFetch(`/reports/bookings?period=${period}`);
+  if (bookRes && bookRes.ok) {
+    const data = await bookRes.json();
+    document.getElementById('repSourceBreakdown').innerHTML = (data.bySource || []).map(s =>
+      `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);">
+        <span>${esc(s.source || 'unknown')}</span><span class="text-gold">${s.count}</span>
+      </div>`
+    ).join('') || '<span class="text-muted">No bookings yet</span>';
+  }
 }
 
 async function exportClients() {

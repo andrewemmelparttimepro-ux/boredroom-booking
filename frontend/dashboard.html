@@ -31,6 +31,10 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
           Clients
         </a>
+        <a href="#" data-page="reports" onclick="showPage('reports')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
+          Reports
+        </a>
         <a href="#" data-page="settings" onclick="showPage('settings')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
           Settings
@@ -203,6 +207,69 @@
               </tbody>
             </table>
           </div>
+        </div>
+      </section>
+
+      <!-- Reports Page -->
+      <section id="page-reports" class="page hidden">
+        <div class="page-header">
+          <div>
+            <h1>Reports</h1>
+            <p>Revenue, bookings, and performance analytics</p>
+          </div>
+          <div class="flex gap-2">
+            <select id="reportPeriod" onchange="loadReports()" style="width:120px;">
+              <option value="week">This Week</option>
+              <option value="month" selected>This Month</option>
+              <option value="year">This Year</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Revenue Stats -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:24px;">
+          <div class="card" style="padding:16px;text-align:center;">
+            <div class="text-sm text-muted">Revenue</div>
+            <div style="font-size:28px;font-weight:700;color:var(--gold);" id="repRevenue">$0</div>
+          </div>
+          <div class="card" style="padding:16px;text-align:center;">
+            <div class="text-sm text-muted">Bookings</div>
+            <div style="font-size:28px;font-weight:700;" id="repBookings">0</div>
+          </div>
+          <div class="card" style="padding:16px;text-align:center;">
+            <div class="text-sm text-muted">Avg / Booking</div>
+            <div style="font-size:28px;font-weight:700;" id="repAvg">$0</div>
+          </div>
+          <div class="card" style="padding:16px;text-align:center;">
+            <div class="text-sm text-muted">Cancel Rate</div>
+            <div style="font-size:28px;font-weight:700;" id="repCancelRate">0%</div>
+          </div>
+        </div>
+
+        <!-- Revenue Chart -->
+        <div class="card" style="margin-bottom:24px;padding:24px;">
+          <h2 style="margin-bottom:16px;font-size:16px;">Revenue Over Time</h2>
+          <canvas id="revenueChart" height="200"></canvas>
+        </div>
+
+        <!-- Service Performance -->
+        <div class="card" style="margin-bottom:24px;">
+          <div class="card-header"><h2>Service Performance</h2></div>
+          <div class="table-wrap"><table><thead><tr><th>Service</th><th>Bookings</th><th>Revenue</th></tr></thead>
+          <tbody id="repServicesTable"></tbody></table></div>
+        </div>
+
+        <!-- Staff Performance -->
+        <div class="card" style="margin-bottom:24px;">
+          <div class="card-header"><h2>Staff Leaderboard</h2></div>
+          <div class="table-wrap"><table><thead><tr><th>Staff</th><th>Bookings</th><th>Revenue</th><th>No-Show Rate</th></tr></thead>
+          <tbody id="repStaffTable"></tbody></table></div>
+        </div>
+
+        <!-- Booking Sources -->
+        <div class="card">
+          <div class="card-header"><h2>Booking Sources</h2></div>
+          <div id="repSourceBreakdown" style="padding:16px;"></div>
         </div>
       </section>
 
@@ -531,6 +598,7 @@
   <!-- Toast Container -->
   <div class="toast-container" id="toastContainer"></div>
 
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="/js/dashboard.js"></script>
 </body>
 </html>

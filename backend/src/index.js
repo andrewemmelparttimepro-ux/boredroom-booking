@@ -14,8 +14,15 @@ const PORT = process.env.PORT || 3002;
 // Auto-migrate on startup
 async function autoMigrate() {
   try {
-    const schema = require('fs').readFileSync(require('path').join(__dirname, 'db', 'schema.sql'), 'utf8');
+    const fs = require('fs');
+    const basePath = require('path').join(__dirname, 'db');
+    const schema = fs.readFileSync(require('path').join(basePath, 'schema.sql'), 'utf8');
     await pool.query(schema);
+    // Run additional migrations
+    try {
+      const phase6 = fs.readFileSync(require('path').join(basePath, 'migrate-phase6.sql'), 'utf8');
+      await pool.query(phase6);
+    } catch (e) { console.warn('Phase6+ migration note:', e.message); }
     console.log('✅ Auto-migration complete');
   } catch (err) {
     console.error('⚠️ Auto-migration error (non-fatal):', err.message);
@@ -36,6 +43,11 @@ app.use('/api/staff', require('./routes/staff'));
 app.use('/api/clients', require('./routes/clients'));
 app.use('/api/appointments', require('./routes/appointments'));
 app.use('/api/slots', require('./routes/slots'));
+app.use('/api/payments', require('./routes/payments'));
+app.use('/api/reports', require('./routes/reports'));
+app.use('/api/admin', require('./routes/admin'));
+app.use('/api', require('./routes/advanced'));
+app.use('/api/enterprise', require('./routes/enterprise'));
 
 // Health check
 app.get('/api/health', async (req, res) => {
@@ -82,6 +94,11 @@ app.get('/api/dashboard/stats', require('./middleware/auth').verifyToken, async 
     console.error('Dashboard stats error:', err);
     res.status(500).json({ error: 'Failed to load stats' });
   }
+});
+
+// Admin panel route
+app.get('/admin', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../frontend/admin.html'));
 });
 
 // Public booking widget route
