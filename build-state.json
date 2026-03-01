@@ -1,10 +1,14 @@
 {
-  "phase1": "in_progress",
+  "phase1": "done",
   "phase2": "pending",
   "phase3": "pending",
   "phase4": "pending",
   "phase5": "pending",
   "github_repo": "https://github.com/andrewemmelparttimepro-ux/boredroom-booking.git",
-  "database_url": "postgresql://boredroom:IYwAJvNKVFIqJsAz2kreniQBOWpbyZrj@dpg-d6g6c51drdic738uhfpg-a.oregon-postgres.render.com:5432/boredroom",
-  "phase1_errors": []
+  "database_url": "postgresql://boredroom:IYwAJvNKVFIqJsAz2kreniQBOWpbyZrj@dpg-d6g6c51drdic738uhfpg-a/boredroom",
+  "database_url_external": "postgresql://boredroom:IYwAJvNKVFIqJsAz2kreniQBOWpbyZrj@dpg-d6g6c51drdic738uhfpg-a.oregon-postgres.render.com:5432/boredroom",
+  "render_url": "https://boredroom-booking.onrender.com",
+  "render_service_id": "srv-d6huabpaae7s73c5h3hg",
+  "render_db_id": "dpg-d6g6c51drdic738uhfpg-a",
+  "phase1_errors": ["External DB connection from local machine fails (Render free-tier restriction) — migration runs on Render startup instead"]
 }
