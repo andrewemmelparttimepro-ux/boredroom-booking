@@ -48,6 +48,7 @@ app.use('/api/reports', require('./routes/reports'));
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api', require('./routes/advanced'));
 app.use('/api/enterprise', require('./routes/enterprise'));
+app.use('/api/pour-request', require('./routes/pourRequest'));
 
 // Health check
 app.get('/api/health', async (req, res) => {
